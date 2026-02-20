@@ -1,0 +1,108 @@
+* { box-sizing: border-box; }
+
+:root {
+      --btn-size: 144px;
+      --img-height: calc(3.58 * var(--btn-size));
+      --img-width: calc(2.39 * var(--btn-size));
+      --radius: 32px;
+      --gap: calc(0.4 * var(--img-width));
+      --shadow: 0 10px 25px rgba(0,0,0,.12);
+    }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #eaeaea;
+  padding: 24px;
+}
+
+.search-wrap {
+  width: min(720px, 100%);
+  width: max(50%);
+}
+
+.search-form {
+      display: flex;
+      grid-template-columns: var(--btn-size) 1fr;
+      align-items: center;
+      gap: var(--gap);
+    }
+
+.search-bottom {
+  padding-left: calc(1.5 * var(--btn-size));
+}
+
+.add-input {
+  height: calc(0.2 * var(--btn-size));
+  font-size: calc(0.1 * var(--btn-size));
+}
+
+.search-left {
+  position: relative;
+  width: var(--btn-size);
+  height: var(--btn-size);
+}
+
+.under-img, .upper-img {
+      position: absolute;
+      width: var(--img-width);
+      height: var(--img-height);
+      top: calc(-0.85 * var(--btn-size));
+      left: calc(-0.7 * var(--btn-size));
+      object-fit: cover;
+      pointer-events: none; /* чтобы клик шел по кнопке */
+    }
+
+/* Кнопка: красный квадрат */
+.search-btn {
+      position: absolute;
+      inset: 0; /* Растянуть на всю обертку */
+      width: var(--btn-size);
+      height: var(--btn-size);
+      border: 0;
+      background: #e10600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      display: grid;
+      place-items: center;
+      padding: 0;
+      outline: none;
+      padding-bottom: 40%;
+      color:#eaeaea;
+      font-size: calc(0.4 * var(--btn-size))
+    }
+    .search-btn:active { transform: translateY(2px); }
+
+
+
+/* Поле поиска справа */
+.search-input {
+      height: calc(0.5 * var(--btn-size));
+      width: 100%;
+      border-radius: calc(var(--radius) + 6px);
+      border: 1px solid rgba(0,0,0,.2);
+      background: rgba(255,255,255,.08);
+      color: rgba(128, 128, 128);
+      padding: 0 5%;
+      font-size: calc(0.15 * var(--btn-size));
+      box-shadow: var(--shadow);
+      outline: none;
+    }
+.search-input::placeholder { color: rgba(192,192,192); }
+.search-input:focus {
+  border-color: rgba(0,0,0,.14);
+  caret-color: rgba(128, 128, 128, 0.1);
+  background: rgba(255,255,255,.08);
+}
+
+
+/* Чтобы на маленьких экранах выглядело аккуратно */
+@media (max-width: 420px) {
+  :root { --btn-size: 64px; --radius: 16px; }
+  .search-input { font-size: 16px; }
+  .badge-img { width: 34px; height: 34px; }
+}

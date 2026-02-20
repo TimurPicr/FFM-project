@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F3-hub</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <div class="search-wrap">
+    <form class="search-form" id="searchform" action="/search" method="GET">
+      <div class="search-left">
+        <img class="under-img" src="/static/snake_4k_under.png" alt="">
+
+        <button class="search-btn" type="submit">GET</button>
+
+        <img class="upper-img" src="/static/snake_4k_upper.png" alt="">
+      </div>
+      
+      <input
+        class="search-input"
+        type="search"
+        name="q"
+
+        placeholder="Напишите название препарата…"
+        autocomplete="off"
+      />
+    </form>
+
+    <!-- search-bottom -->
+    <div class="search-bottom">
+
+        <p class="advanced-title">Additional questions (optional)</p>
+
+        <input
+          type="search"
+          name="q1"
+          placeholder="Example: What population is studied?"
+          class="add-input"
+          form="searchform"
+        >
+
+        <input
+          type="search"
+          name="q2"
+          placeholder="Example: What outcomes are measured?"
+          class="add-input"
+          form="searchform"
+        >
+
+        <input
+          type="search"
+          name="q3"
+          placeholder="Example: What dosage or intervention?"
+          class="add-input"
+          form="searchform"
+        >
+
+      </div>
+
+</body>
+</html>
