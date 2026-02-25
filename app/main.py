@@ -1,31 +1,166 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from __future__ import annotations
+
+from pathlib import Path
+from typing import List, Literal, Optional
+
+from fastapi import FastAPI, Request, Query
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-BASE_DIR = Path(__file__).resolve().parent  # папка, где лежит main.py
+from src.synopsis_gen.generation.pipeline import generate_synopsis_docx
+
+
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI()
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
-app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+class SynopsisRequest(BaseModel):
+    inn: str = Field(default="palbociclib", description="INN/MNN")
+    mode: Literal["be_fed", "cns_pk"] = "be_fed"
+
+    indication: str = Field(
+        default="сравнительная фармакокинетика (биоэквивалентность) палбоциклиба у здоровых добровольцев"
+    )
+    regimen: str = Field(default="после высококалорийной пищи")
+    out: str = Field(default="synopsis_palbociclib.docx")
+
+    sponsor: str = ""
+    
+    centers: str = ""
+    test_product_name: str = ""
+    reference_product_name: str = ""
+
+    cvintra: float = 0.30
+    power: float = 0.80
+    alpha: float = 0.05
+    gmr: float = 0.95
+    dropout: float = 0.10
+
+    study_number: Optional[int] = None
+    seed_url: Optional[List[str]] = None
+    local_synopsis: Optional[List[str]] = None
+
+    no_cache: bool = False
+
+
+def apply_mode_defaults(req: SynopsisRequest) -> SynopsisRequest:
+    """Поведение как в CLI: если mode=cns_pk и пользователь не менял дефолты — подставить другие."""
+    if req.mode == "cns_pk":
+        default_indication = SynopsisRequest.model_fields["indication"].default
+        default_regimen = SynopsisRequest.model_fields["regimen"].default
+
+        if req.indication == default_indication:
+            req.indication = (
+                f"оценка фармакокинетики и экспозиции {req.inn} "
+                f"при опухолях ЦНС (в т.ч. проникновение в ЦНС)"
+            )
+        if req.regimen == default_regimen:
+            req.regimen = "без разницы"
+    return req
 
 
 @app.get("/", include_in_schema=False)
-def home():
+def home() -> FileResponse:
     return FileResponse(BASE_DIR / "index.html")
 
+
 @app.get("/styles.css", include_in_schema=False)
-def styles():
+def styles() -> FileResponse:
     return FileResponse(BASE_DIR / "styles.css", media_type="text/css")
 
-@app.get("/search")
-async def search(request: Request):
-    q = request.query_params.get("q")
-    q1 = request.query_params.get("q1")
-    q2 = request.query_params.get("q2")
-    q3 = request.query_params.get("q3")
 
-    return templates.TemplateResponse("synopsis.html", {"request": request, "q": q, "q1" : q1, "q2" : q2, "q3": q3})
+from typing import Optional
+from fastapi import Query
+from fastapi.responses import FileResponse, HTMLResponse
+
+def to_int(v: Optional[str]) -> Optional[int]:
+    if v is None or v.strip() == "":
+        return None
+    return int(v)
+
+def to_float(v: Optional[str]) -> Optional[float]:
+    if v is None or v.strip() == "":
+        return None
+    return float(v)
+
+@app.get("/search")
+async def search(
+    inn: str,
+    mode: str = "be_fed",
+    indication: Optional[str] = None,
+    regimen: Optional[str] = None,
+    sponsor: Optional[str] = None,
+
+    study_number: Optional[str] = None,   
+    cvintra: Optional[str] = "0.30",      
+    power: Optional[str] = "",            
+    alpha: Optional[str] = "0.05",        
+    gmr: Optional[str] = "",            
+    dropout: Optional[str] = "",          
+
+    centers: Optional[str] = None,
+    test_product_name: Optional[str] = None,
+    reference_product_name: Optional[str] = None,
+    seed_url: Optional[str] = None,
+    local_synopsis: Optional[str] = None,
+    no_cache: Optional[int] = Query(default=0),
+):
+    req = SynopsisRequest(
+        inn=inn,
+        mode=mode,
+        indication=indication,
+        regimen=regimen,
+        out="synopsis.docx",
+        sponsor=sponsor,
+        study_number=to_int(study_number),
+        centers=centers,
+        test_product_name=test_product_name,
+        reference_product_name=reference_product_name,
+        cvintra=to_float(cvintra) if cvintra not in (None, "") else 0.30,
+        power=to_float(power) if power not in (None, "") else 0.80,
+        alpha=to_float(alpha) if alpha not in (None, "") else 0.05,
+        gmr=to_float(gmr) if gmr not in (None, "") else 0.95,
+        dropout=to_float(dropout) if dropout not in (None, "") else 0.10,
+        seed_url=seed_url,
+        local_synopsis=local_synopsis,
+        no_cache=no_cache,
+    )
+    req = apply_mode_defaults(req)
+
+    out_path = await run_in_threadpool(
+        generate_synopsis_docx,
+        inn=req.inn,
+        indication=req.indication,
+        regimen=req.regimen,
+        out_path=req.out,
+        mode=req.mode,
+        sponsor=req.sponsor,
+        study_number=req.study_number,
+        centers=req.centers,
+        test_product_name=req.test_product_name,
+        reference_product_name=req.reference_product_name,
+        seed_urls=req.seed_url or None,
+        local_synopsis_paths=req.local_synopsis,
+        use_cache=(not req.no_cache),
+        cvintra=req.cvintra,
+        power=req.power,
+        alpha=req.alpha,
+        gmr=req.gmr,
+        dropout=req.dropout,
+    )
+
+    return FileResponse(
+        path=out_path,
+        filename="synopsis.docx",
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )

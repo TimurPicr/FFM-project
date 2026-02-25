@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>F3-hub</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 
 <body>
@@ -22,7 +22,7 @@
       <input
         class="search-input"
         type="search"
-        name="q"
+        name="inn"
 
         placeholder="Напишите название препарата…"
         autocomplete="off"
@@ -32,31 +32,160 @@
     <!-- search-bottom -->
     <div class="search-bottom">
 
-        <p class="advanced-title">Additional questions (optional)</p>
+        <p class="advanced-title">Уточните что сможете</p>
 
+        <!-- MODE -->
+        <select name="mode" class="add-input" form="searchform">
+          <option value="be_fed" selected>Биоэквивалентность</option>
+          <option value="cns_pk">Фармакокинетика</option>
+        </select>
+
+        <!-- INDICATION -->
         <input
-          type="search"
-          name="q1"
-          placeholder="Example: What population is studied?"
+          type="text"
+          name="indication"
+          placeholder="Indication / study objective"
           class="add-input"
           form="searchform"
-        >
+        />
 
+        <!-- REGIMEN -->
         <input
-          type="search"
-          name="q2"
-          placeholder="Example: What outcomes are measured?"
+          type="text"
+          name="regimen"
+          placeholder="Regimen (e.g., after high-fat meal)"
           class="add-input"
           form="searchform"
-        >
+        />
 
+        <!-- SPONSOR -->
         <input
-          type="search"
-          name="q3"
-          placeholder="Example: What dosage or intervention?"
+          type="text"
+          name="sponsor"
+          placeholder="Спонсор"
           class="add-input"
           form="searchform"
+        />
+
+        <!-- STUDY NUMBER -->
+        <input
+          type="text"
+          name="study_number"
+          placeholder="Кол-во источников"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- CENTERS -->
+        <input
+          type="text"
+          name="centers"
+          placeholder="Centers (e.g., 1–3 sites, countries/cities)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- TEST PRODUCT NAME -->
+        <input
+          type="text"
+          name="test_product_name"
+          placeholder="Название проверяемого вещества"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- REFERENCE PRODUCT NAME -->
+        <input
+          type="text"
+          name="reference_product_name"
+          placeholder="Название референсного вещества"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- CVINTRA -->
+        <input
+          type="number"
+          name="cvintra"
+          step="0.01"
+          min="0"
+          max="5"
+          placeholder="CVintra (default: 0.30)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- POWER -->
+        <input
+          type="number"
+          name="power"
+          step="0.01"
+          min="0"
+          max="1"
+          placeholder="Power (default: 0.80)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- ALPHA -->
+        <input
+          type="number"
+          name="alpha"
+          step="0.001"
+          min="0"
+          max="1"
+          placeholder="Alpha (default: 0.05)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- GMR -->
+        <input
+          type="number"
+          name="gmr"
+          step="0.01"
+          min="0"
+          max="5"
+          placeholder="GMR (default: 0.95)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- DROPOUT -->
+        <input
+          type="number"
+          name="dropout"
+          step="0.01"
+          min="0"
+          max="1"
+          placeholder="Dropout (default: 0.10)"
+          class="add-input"
+          form="searchform"
+        />
+
+        <!-- SEED URLS (one per line) -->
+        <input
+          name="seed_url"
+          placeholder="Seed URLs (one per line)"
+          class="add-input"
+          form="searchform"
+          rows="3"
         >
+
+        <!-- LOCAL SYNOPSIS PATHS (one per line) -->
+        <input
+          name="local_synopsis"
+          placeholder="Local synopsis file paths (one per line)"
+          class="add-input"
+          form="searchform"
+          rows="3"
+        >
+
+        <!-- NO CACHE -->
+        <label style="display:flex; gap:8px; align-items:center;">
+          <input type="checkbox" name="no_cache" value="1" form="searchform" />
+          <span>Ничего не знаю</span>
+        </label>
 
       </div>
 

@@ -31,15 +31,6 @@ body {
       gap: var(--gap);
     }
 
-.search-bottom {
-  padding-left: calc(1.5 * var(--btn-size));
-}
-
-.add-input {
-  height: calc(0.2 * var(--btn-size));
-  font-size: calc(0.1 * var(--btn-size));
-}
-
 .search-left {
   position: relative;
   width: var(--btn-size);
@@ -99,6 +90,24 @@ body {
   background: rgba(255,255,255,.08);
 }
 
+/* search-bottom: минималистично и компактно */
+.search-bottom{
+  margin-top: 14px;
+  margin-left: calc(0.7 * var(--btn-size) + var(--gap));
+  padding: 14px 14px 14px 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  background: rgba(255,255,255,.55);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr; /* 2 колонки */
+  font-size: 20px;
+}
+
+.add-input {
+  font-size: 20px;
+}
+
 
 /* Чтобы на маленьких экранах выглядело аккуратно */
 @media (max-width: 420px) {
@@ -106,3 +115,7 @@ body {
   .search-input { font-size: 16px; }
   .badge-img { width: 34px; height: 34px; }
 }
+
+
+
+
