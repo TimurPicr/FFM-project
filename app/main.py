@@ -1,56 +1,62 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Any
 
 from fastapi import FastAPI, Request, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.synopsis_gen.generation.pipeline import generate_synopsis_docx
 
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "static"
+STATIC_DIR = BASE_DIR / "../static"
 
 app = FastAPI()
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 class SynopsisRequest(BaseModel):
-    inn: str = Field(default="palbociclib", description="INN/MNN")
-    mode: Literal["be_fed", "cns_pk"] = "be_fed"
+    inn: str = Field(description="INN/MNN")
 
-    indication: str = Field(
-        default="сравнительная фармакокинетика (биоэквивалентность) палбоциклиба у здоровых добровольцев"
-    )
-    regimen: str = Field(default="после высококалорийной пищи")
-    out: str = Field(default="synopsis_palbociclib.docx")
+    mode: Optional[Literal["be_fed", "cns_pk"]] = "be_fed"
+    indication: Optional[str] = None
+    regimen: Optional[str] = None
+    out: Optional[str] = None
 
-    sponsor: str = ""
-    
-    centers: str = ""
-    test_product_name: str = ""
-    reference_product_name: str = ""
+    sponsor: Optional[str] = None
+    centers: Optional[str] = None
+    test_product_name: Optional[str] = None
+    reference_product_name: Optional[str] = None
 
-    cvintra: float = 0.30
-    power: float = 0.80
-    alpha: float = 0.05
-    gmr: float = 0.95
-    dropout: float = 0.10
+    cvintra: Optional[float] = 0.30
+    power: Optional[float] = 0.80
+    alpha: Optional[float] = 0.05
+    gmr: Optional[float] = 0.95
+    dropout: Optional[float] = 0.10
 
     study_number: Optional[int] = None
     seed_url: Optional[List[str]] = None
     local_synopsis: Optional[List[str]] = None
 
-    no_cache: bool = False
+    no_cache: Optional[bool] = False
+
+    @field_validator("seed_url", "local_synopsis", mode="before")
+    @classmethod
+    def coerce_list(cls, v: Any):
+        # из формы пустое поле приходит как ''
+        if v is None or v == "":
+            return []
+        # иногда может прийти одиночная строка
+        if isinstance(v, str):
+            return [v]
+        return v
 
 
 def apply_mode_defaults(req: SynopsisRequest) -> SynopsisRequest:
@@ -160,7 +166,7 @@ async def search(
     )
 
     return FileResponse(
-        path=out_path,
+        path=local_synopsis / "synopsis.docx",
         filename="synopsis.docx",
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
