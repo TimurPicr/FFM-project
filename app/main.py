@@ -166,7 +166,7 @@ async def search(
     )
 
     return FileResponse(
-        path=local_synopsis / "synopsis.docx",
+        path=out_path,
         filename="synopsis.docx",
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )

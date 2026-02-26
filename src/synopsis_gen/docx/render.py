@@ -29,8 +29,8 @@ def add_label_line(doc: Document, label: str, value: Optional[str], *, placehold
     p = doc.add_paragraph()
     r1 = p.add_run(label + " ")
     r1.bold = True
-    if value:
-        p.add_run(value)
+    if value is not None and str(value).strip() != "":
+        p.add_run(str(value))
     else:
         if placeholder is None:
             return
